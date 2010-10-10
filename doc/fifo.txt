@@ -1,0 +1,16 @@
+pseudocode for the fifo:
+
+server.pl
+fork and create agent
+fork and create client
+server  mkfifo(/tmp/soxprox.PPID.PID/command)
+server  opens command fifo for reading.
+client library handles socket request by writing to command fifo.
+server reads command fifo and passes request to agent.
+agent returns with socket info (if any)
+server sets up another fifo (/tmp/soxprox.PPID.PID/socket.1)
+server returns socket info to client library
+client library opens the socket fifo and returns that file descriptor. 
+
+
+

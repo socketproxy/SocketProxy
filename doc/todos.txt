@@ -1,0 +1,18 @@
+library: __sp_serialize function
+library: __sp_deserialize function
+library: __sp_request type
+library: __sp_response type
+library: socket function
+library: udp recvfrom function
+library: udp sendto function
+
+server: socket function
+server: __sp_serialize function
+server: __sp_deserialize function
+server: udp recvfrom function
+server: udp sendto function
+
+agent: udp recvfrom function
+agent: udp sendto function
+agent: socket function
+

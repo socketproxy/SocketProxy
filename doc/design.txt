@@ -1,0 +1,36 @@
+The principle use case of socket proxy: you have penetrated a system in a DMZ.  The target's perimeter firewall is now useless in stopping your attacks. Your attack machine has a variety of tools for mapping a network: nmap, netcat, nessus, metasploit, etc. These are not installed on the hardened host that you've compromised. 
+
+Socket proxy allows you to pivot your attack tools through the compromised host. They remain installed on your machine, but their network activity occurs on the target.
+
+Components:
+
+Agent. This is deployed to the target.
+Library. This shadows the Berkeley sockets library. Calls to connect, send,
+recv, etc are all re-written here.
+Server. This handles a connection to the agent and a connection to the library
+part of the client.
+Client. Any program. This is dynamically linked to the library at run time.
+
+Agent
+
+This will probably be written in Perl for portability. It reads
+connect/read/write requests from the Server, maintains network connections and sends data back.
+
+Network connectivity over stdin/stdout.
+
+wait for network connection requests from server.
+    parse request
+    fulfill request
+    as necessary, maintain network connection data.
+
+Server
+
+Fork once, set up ssh to agent running on target. 
+Fork twice, set up client with loaded server. 
+wait for network connection requests from client.
+    parse and normalize request
+    delegate network connection request to agent
+
+Library
+
+Written in C. Uses IPC to simulate network IO requests.

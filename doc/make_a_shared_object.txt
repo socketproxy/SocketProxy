@@ -1,0 +1,4 @@
+gcc -shared -Wl -soname,libmike -o libmike.so.1 fake_malloc.o
+
+http://tldp.org/HOWTO/Program-Library-HOWTO/shared-libraries.html
+

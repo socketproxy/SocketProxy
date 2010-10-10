@@ -1,0 +1,9 @@
+Here's the grammar for a message
+
+message := <command> \n { <param_def> } <eom_symbol>
+command := [a-zA-Z_][a-zA-Z0-9_-]+
+param_def := LAMBDA | 
+    <name> <white> <value> \n
+name := [a-zA-Z_][a-zA-Z0-9_-]+:
+white := [\t ]+
+value := [^\n]+
