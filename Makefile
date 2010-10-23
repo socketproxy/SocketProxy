@@ -16,6 +16,12 @@ tarball:
 	cd ..
 	tar czvf ../socketproxy-`date +'%Y%m%d'`.tgz .
 
+diff:
+	echo Not added
+	git diff
+	echo Added, not committed 
+	git diff --cached
+
 clean:
 	rm -r build/*
 
