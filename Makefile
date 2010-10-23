@@ -5,7 +5,6 @@
 
 commit:
 	git commit 
-	#git remote add origin git@github.com:socketproxy/SocketProxy.git
 
 push: commit
 	git push origin master
