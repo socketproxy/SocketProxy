@@ -1,36 +1,80 @@
-The principle use case of socket proxy: you have penetrated a system in a DMZ.  The target's perimeter firewall is now useless in stopping your attacks. Your attack machine has a variety of tools for mapping a network: nmap, netcat, nessus, metasploit, etc. These are not installed on the hardened host that you've compromised. 
+The principle use case of socket proxy: you have penetrated a system in a DMZ.
+The target's perimeter firewall is now useless in stopping your attacks. Your
+attack machine has a variety of tools for mapping a network: nmap, netcat,
+nessus, metasploit, etc. These are not installed on the hardened system that
+you've compromised. 
 
-Socket proxy allows you to pivot your attack tools through the compromised host. They remain installed on your machine, but their network activity occurs on the target.
+SocketProxy allows you to pivot your attack tools through the compromised
+system. They remain installed on your machine, but their network activity
+occurs on the target.
+
+
 
 Components:
 
-Agent. This is deployed to the target.
-Library. This shadows the Berkeley sockets library. Calls to connect, send,
-recv, etc are all re-written here.
-Server. This handles a connection to the agent and a connection to the library
-part of the client.
-Client. Any program. This is dynamically linked to the library at run time.
+ o Agent. This is deployed to the target.
+ o Library. This shadows the Berkeley sockets library. Calls to connect, send,
+   recv, etc are all re-written here.
+ o Server. This handles a connection to the agent and a connection to the
+   library component.
+ o Client. Any program. This is dynamically linked to the library at run time.
+
+
 
 Agent
 
-This will probably be written in Perl for portability. It reads
-connect/read/write requests from the Server, maintains network connections and sends data back.
+This component is to be deployed to a compromised system. The more and 
+different types of systems that an agent can be deployed to, the more
+valuable it is. As such, portability is a key design factor. The first agent
+was written in Perl because many web servers use it and install a Perl 
+interpreter by default. Also, many Unixes have a Perl interpreter as a part of 
+their base system install. It is even available on a few Windows systems.
 
-Network connectivity over stdin/stdout.
+Other agents will be written in different languages to be deployed to
+different targets. Any design decisions must keep this in mind! Similarly,
+the Agent must depend on only the most common libraries or modules be installed
+underneath it.
 
-wait for network connection requests from server.
-    parse request
-    fulfill request
-    as necessary, maintain network connection data.
+The agent must:
+ o Connect or be connected to the server that created it.
+ o Read, process, and respond to incoming requests from the server.
+ o Maintain a data structure of active network connections.
+
+Network connectivity may occur over standard in / standard out, over an
+encrypted tunnel, as a call back to the server, or through a side-channel.
+
+
 
 Server
 
-Fork once, set up ssh to agent running on target. 
-Fork twice, set up client with loaded server. 
-wait for network connection requests from client.
-    parse and normalize request
-    delegate network connection request to agent
+The server provides a user interface, creates the agent and client processes,
+proxies all network connections between the agent and client, and maintains
+temporary storage for those connections.
+
+Apart from the fact that it has so much to do, the server has little in the way
+of design requirements. For example, it could be written in any language that
+can manage processes and network connections.
+
+The server must:
+ o Fork once, setting up ssh to agent running on target. 
+ o Fork again, set up client with loaded library. 
+ o Loop, waiting for network connection requests from client.
+ o Parse and normalize requests
+ o Delegate network requests to agent
+
+
 
 Library
+
+The job of the Library is to intercept network traffic from the client and
+pass it to the Agent. It has to do this while maintaining the illusion that
+the client is talking to standard networking system.
+
+There are a few different ways to handle this. SocketProxy uses proxy
+pivoting by preloading a library.
+
+The library is to be preloaded into the client's execution environment at
+program load time. It will shadow calls to the Berkeley sockets library,
+passing requests to the agent through the server.
 
 Written in C. Uses IPC to simulate network IO requests.
