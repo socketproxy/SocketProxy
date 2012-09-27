@@ -7,7 +7,7 @@ commit:
 	git commit 
 
 push: commit
-	git push origin master
+	git push origin
 
 loc:
 	wc -l `find . | egrep "(Makefile|\.c|\.sh|\.pl|\.h)$$"`
