@@ -5,22 +5,40 @@
 #include <dlfcn.h>
 #include <unistd.h>
 
-/* I hate the program implemented by target.c. I'm going to show you the
- * secret and the salt used for encryption! I'm going to do that with
- * dlsym and shared library interposition.
+
+/***
+ * This file implements a wrapper for crypt(3) which prints out
+ * the parameters passed in and calls the original crypt(3) with
+ * dlsym.
  */
 
-
-/* This is the fake crypt. It makes a call to the real crypt, but before
- * it does that it prints out the secret key and the salt.
+/* This is the fake crypt function. It makes a call to the real crypt(3), 
+ * but before it does that it prints out the secret key and the salt.
  */
 char *
 crypt ( const char *key, const char *salt ) 
 {
 
+	/* A function pointer used to hold a reference to the real
+	 * crypt(3) function. Note that this is a static pointer.
+	 */
 	static void* (*real_crypt)(const char *, const char *) = NULL;
 
+
+	/* Setting the static function pointer. */
 	if ( !real_crypt ) {
+
+		/* dlsym is used to get a reference to a dynamically linked
+		 * symbol, such as a function in a dynamically linked library.
+		 * It takes in two parameters, a "handle" to a dynamically 
+		 * linked library from dlopen(2), and the symbol to be linked. 
+		 * It returns a pointer to that symbol, or null on error.
+		 *
+		 * How do you get the handle? I'm not sure, but RTLD_NEXT
+		 * is a special pseudo-handle to next library that exports
+		 * the symbol you want. Easy-peasy.
+		 */
+
 		real_crypt = dlsym(RTLD_NEXT, "crypt");
 	}
 

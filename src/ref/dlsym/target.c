@@ -74,7 +74,7 @@ main (int argc, char **argv)
 	}
 
 	/* encrypt the secret */
-	if ( (encrypted_secret = crypt( secret, salt )) == NULL ) {
+	if ( (encrypted_secret = (char *)crypt( secret, salt )) == NULL ) {
 		/* XXX die with error */
 		exit ( 1 );
 	}
