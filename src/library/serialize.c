@@ -10,7 +10,7 @@
 
 /* __sp_serialize_init
  *
- * initializs an sp_serialize request or response
+ * initializes an sp_serialize request or response
  */
 __sp_request
 __sp_serialize_init(const char *name)

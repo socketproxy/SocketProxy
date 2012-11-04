@@ -6,6 +6,11 @@
 #ifndef __FIFO_CLIENT_H
 #define __FIFO_CLIENT_H
 
+/***
+ * XXX: Work in progress: replacing fifos with unix domain sockets. This
+ * will likely involve replacing this file.
+ * 
+ */
 #include "serialize.h"
 #include <sys/types.h>
 #include <sys/stat.h>

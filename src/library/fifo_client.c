@@ -13,6 +13,12 @@ __sp_call_server( __sp_request *req )
 {
 
     /***
+     * XXX: Work in progress: chaning this code over from using fifos to 
+     * using unix domain sockets. This will likely involve replacing this
+     * file entirely.
+     */
+
+    /***
      * Variable declarations 
      */
      

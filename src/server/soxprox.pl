@@ -160,14 +160,19 @@ make_agent {
 
 
 
+###
+# sub make_client
+# 
+# spawns the local client process and starts communication with it.
+# 
 sub
 make_client {
     use POSIX;
 
     ###
-    # Design note: using fifos for the client/server IPC here because unix 
-    # domain sockets use the socket API that I'm stomping on. Also, unlike 
-    # pipes, fifos can be opened read-write in linux.
+    # XXX Work in progress: move from fifos to unix domain sockets. I was
+    # using fifos previously because I wasn't using dlsym to shadow the
+    # socket(2) related system calls. 
     #
 
     my $client_cmd = shift;
@@ -197,6 +202,9 @@ make_client {
 
     } else { # Parent
 
+        # XXX Unix domain sockets also use file paths as addresses.
+        # As such, this naming convention will continue to be used.
+        #
         $command_fifo = "/tmp/soxprox-$rv-$$/command_fifo";
         $alive{$rv} = 1;
 
