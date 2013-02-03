@@ -1,14 +1,14 @@
 /***
- * socketproxy/src/library/fifo_client.h
+ * socketproxy/src/library/uds_client.h
  * (c) 2010 Mike Doyle
  */
 
-#ifndef __FIFO_CLIENT_H
-#define __FIFO_CLIENT_H
+#ifndef __UDS_CLIENT_H
+#define __UDS_CLIENT_H
 
 /***
  * XXX: Work in progress: replacing fifos with unix domain sockets. This
- * will likely involve replacing this file.
+ * file will replace fifo_client.h.
  * 
  */
 #include "serialize.h"
@@ -30,11 +30,11 @@
  */
 __sp_response __sp_call_server( __sp_request *req );
 
-/* __sp_get_cmd_fifo_name()
+/* __sp_get_cmd_uds_addr()
  *
- * returns a malloc'd copy of the filename of the fifo used to
- * communicate with he socketproxy server.
+ * returns a malloc'd copy of the filepath used by the unix domain socket
+ * used to to communicate with the socket proxy server process.
  */
-char *__sp_get_cmd_fifo_name();
+char *__sp_get_cmd_uds_addr();
 
 #endif

@@ -1,8 +1,8 @@
-/* socketproxy/src/library/fifo_client.c
+/* socketproxy/src/library/uds_client.c
  * (c) 2010 Mike Doyle
  */
 
-#include "fifo_client.h"
+#include "uds_client.h"
 #define BUFSIZE 512
 #include <stdio.h>
 
@@ -18,10 +18,12 @@ __sp_call_server( __sp_request *req )
 {
 
     /***
-     * XXX: Work in progress: chaning this code over from using fifos to 
-     * using unix domain sockets. This will likely involve replacing this
-     * file entirely.
+     * XXX: Work in progress: changing this code over from using fifos to 
+     * using unix domain sockets. This will likely involve replacing the
+     * fifo_client.c file with this file.
      */
+
+
 
     /***
      * Variable declarations 
@@ -30,13 +32,12 @@ __sp_call_server( __sp_request *req )
     /*
      * The message to send.
      */
-
     char *mesg;
 
-    /* file name and descriptor of the "command fifo" communications 
-     * channel to the server 
+    /* file path and descriptor of the "command socket" communications 
+     * channel to the server. 
      */
-    char *cmdfifoname;
+    char *cmdaddrpath;
     int cmdfd;
 
     /* flag and mode bitfields for the call and response i/o */
@@ -52,6 +53,10 @@ __sp_call_server( __sp_request *req )
     __sp_response resp;
 
 
+    /* Pointer to the real socket(2) */
+    static int (*__sp_real_socket)(int, int, int) = NULL;
+
+
 
     /***
      *Initialization. 
@@ -61,12 +66,12 @@ __sp_call_server( __sp_request *req )
 
     mesg = *((char **)req);
 
-    if ( (cmdfifoname = __sp_get_cmd_fifo_name() ) == NULL ) {
+    if ( (cmdaddrpath = __sp_get_cmd_uds_path() ) == NULL ) {
         return (__sp_response)NULL;
     }
 
     if(DEBUG){
-        printf( "Cmd fifo name: %s\n", cmdfifoname );
+        printf( "Cmd uds path: %s\n", cmdaddrpath );
     }
 
     callflags = O_WRONLY;
@@ -77,11 +82,24 @@ __sp_call_server( __sp_request *req )
     
 
 
+    /* Setting the static function pointer, if not already set. */
+    if ( __sp_real_socket == NULL ) {
+            __sp_real_socket = dlsym(RTLD_NEXT, "socket");
+    }       
+
+
+
+    /* XXX: Open socket to server here.  */
+
+
+
     /* end of initialization for __sp_call_server() */
     
     /***
      * Send a request 
      */
+
+    /* XXX: Replace this code with code that writes to the socket. */
     if ( (cmdfd = xopenx ( cmdfifoname, callflags, callmode )) == -1 ){
         return (__sp_response)NULL;
     }
@@ -96,17 +114,12 @@ __sp_call_server( __sp_request *req )
     /*** 
      * Receive a response 
      */
+
+    /* XXX: Replace this with code that reads from the socket.
     bzero ( buf, bufsize );
 
-    if(DEBUG) {
-        printf (" Just before xopenx\n");
-    }
     if ( (cmdfd = xopenx ( cmdfifoname, respflags, respmode )) == -1 ){
         return (__sp_response)NULL;
-    }
-
-    if(DEBUG) {
-        printf (" Just after xopenx\n");
     }
 
 
@@ -119,17 +132,17 @@ __sp_call_server( __sp_request *req )
 
     return resp;
 
-} /* end of __sp_call_server */
+} /* end of __sp_call_server() */
 
 
 
-/* __sp_get_cmd_fifo_name()
+/* __sp_get_cmd_uds_addr()
  *
  * returns a malloc'd copy of the filename of the fifo used to
  * communicate with he socketproxy server.
  */
 char *
-__sp_get_cmd_fifo_name()
+__sp_get_cmd_uds_addr()
 {
     pid_t pid, ppid;
     char *s;
@@ -142,4 +155,4 @@ __sp_get_cmd_fifo_name()
     }
 
     return s;
-} /* end of __sp_get_cmd_fifo_name() */
+} /* end of __sp_get_cmd_uds_addr() */

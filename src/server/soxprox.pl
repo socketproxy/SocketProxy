@@ -6,6 +6,7 @@
 
 use strict;
 use File::Basename;
+use IO:Socket::UNIX;
 my $debug = 0;
 my $client_fifo_mask = 0777;
 my %alive;
@@ -26,7 +27,7 @@ $SIG{CHLD} = \&sig_chld;
 $SIG{INT} = \&sig_int;
 my ($agent_cmd, $client_cmd) = parse_cmdline();
 my ($agent_pid, $from_agent_fh, $to_agent_fh) = make_agent($agent_cmd);
-my ($client_pid, $client_cmd_fifo) = make_client($client_cmd);
+my ($client_pid, $client_socket) = make_client($client_cmd);
 
 
 
@@ -176,7 +177,6 @@ make_client {
     #
 
     my $client_cmd = shift;
-    my $command_fifo;
 
     # This needs to be set pre-fork so that we're sure that the child
     # process's pause will catch correctly.
@@ -205,17 +205,27 @@ make_client {
         # XXX Unix domain sockets also use file paths as addresses.
         # As such, this naming convention will continue to be used.
         #
-        $command_fifo = "/tmp/soxprox-$rv-$$/command_fifo";
+        my $socket_path = "/tmp/soxprox-$rv-$$/command_fifo";
+	
         $alive{$rv} = 1;
 
         mkdir( dirname($command_fifo), $client_fifo_mask )
             || die "Couldn't make directory for $command_fifo";
-        mkfifo( $command_fifo, $client_fifo_mask )
-            || die "Couldn't make fifo $command_fifo: $!";
+
+	unlink($socket_path);
+
+	my $listener = IO::Socket::UNIX->new(
+		Type => SOCK_STREAM,
+		Local => $socket_path,
+		Listen => SOMAXCONN,
+	) or die ("Can't create server socket: $!\n" );
+
+	my $sock = $listener->accept()
+		or die ( "Can't accept connection: $!\n" );
 
         kill ( 'ALRM', $rv );
 
-        return ( $rv, $command_fifo );
+        return ( $rv, $sock );
     }
 } # end of sub make_client;
 
