@@ -1,0 +1,30 @@
+The build system of SocketProxy needs to be able to handle a few things:
+ o Compile executables from C source code
+ o Compile libraries from C source code
+ o Manage Perl scripts and libraries as appropriate
+ o Be cross-platform as much as I want, maybe more
+ o Compile/Create and execute unit test suites
+ o Manage source code analysis routines (lint, valgrind, etc.)
+ o Manage revision control
+ o Support continuous integration as necessary
+ o deployment
+ o packaging via .tgz, .deb, .rpm
+ o Clean up executables
+
+As of now I don't do half of the above, but I plan to. I want my build system
+to be there for me.
+
+Some things I'll be looking at:
+ o gmake
+ o autoconf
+ o 
+
+This may require that I move some files around. That's fine. I started with
+git for a reason. If I were on SVN or some such I wouldn't be fussing with
+a build system right now, I'd be moving from SVN to git.
+
+Cross-platform support is not a thing that I'm concerned with today, but
+I'd like to start addressing it now while it's cheap so that I don't have
+to begin when it's expensive.
+
+
