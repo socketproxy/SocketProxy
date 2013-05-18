@@ -17,7 +17,7 @@ to be there for me.
 Some things I'll be looking at:
  o gmake
  o autoconf
- o 
+ o various unit testing mechanisms for Perl and C.
 
 This may require that I move some files around. That's fine. I started with
 git for a reason. If I were on SVN or some such I wouldn't be fussing with
@@ -27,4 +27,29 @@ Cross-platform support is not a thing that I'm concerned with today, but
 I'd like to start addressing it now while it's cheap so that I don't have
 to begin when it's expensive.
 
+Integration of these mechanisms is going to be interesting. On the agent side,
+I need to have a perl executable that is deployed and must execute in hostile 
+environments; (precisely, it is hostile to the environment in which it is
+deployed.) This means that it is unacceptable for me to include scaffolding
+code in that executable if such code might prevent execution. I plan for
+additional agents to be written in other languages.
 
+Similarly on the library side, I have a C library that is injected into 
+foriegn executables. I'd prefer that my library not poison the 
+executable's symbol table.
+
+Also, I want these various testing technologies to be commonly executable
+so that I can run one command--make test--and perform a complete regression
+test of all components.
+
+Because of this interplay between various languages and runtimes, I am 
+looking at the Test Anything Protocol, (TAP.) This protocol splits the 
+function of running tests with the functions of running and reporting on 
+test suites and reporting. These two functions are handled by producers 
+and parsers, respectively. 
+
+For producers and parsers, Test::More is the most popular TAP producer
+for Perl 5, libtap appears to be the prominent producer for C, and
+Test::Harness is the prevalent parser for this protocol, which was
+incubated in the Perl world, but C Tap Harness apparently was written to
+play nice with automake.
