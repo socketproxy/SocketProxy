@@ -3,6 +3,23 @@
 # (c) 2010 Mike Doyle
 #
 
+.PHONY: agent server library test commit push loc tarball diff clean
+export BUILDDIR = $(PWD)/bin
+export BINDIR = $(PWD)/bin
+export LIBDIR = $(PWD)/lib
+
+agent:
+	$(MAKE) -C src agent
+
+server:
+	$(MAKE) -C src server
+
+library:
+	$(MAKE) -C src library
+
+test:
+	$(MAKE) -C src test
+
 commit:
 	git commit 
 
