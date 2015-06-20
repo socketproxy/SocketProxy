@@ -1,7 +1,7 @@
 # socketproxy/src/library/Makefile
 # (c) 2010 Mike Doyle
 
-.PHONY: library
+.PHONY: library clean
 LIBDIR ?= .
 
 socket.o: socket.c socket.h serialize.h
@@ -10,7 +10,7 @@ socket.o: socket.c socket.h serialize.h
 fifo_client.o: fifo_client.c fifo_client.h serialize.h
 
 clean:
-	rm *.o $(LIBDIR)/libmike.so.1
+	rm -f *.o $(LIBDIR)/libmike.so.1
 
 library:
 	gcc -fPIC -c *.c

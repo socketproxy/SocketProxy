@@ -6,7 +6,7 @@
 
 use strict;
 use File::Basename;
-use IO:Socket::UNIX;
+use IO::Socket::UNIX;
 my $debug = 0;
 my $client_fifo_mask = 0777;
 my %alive;
@@ -28,6 +28,7 @@ $SIG{INT} = \&sig_int;
 my ($agent_cmd, $client_cmd) = parse_cmdline();
 my ($agent_pid, $from_agent_fh, $to_agent_fh) = make_agent($agent_cmd);
 my ($client_pid, $client_socket) = make_client($client_cmd);
+my ($client_cmd_fifo, $command_fifo);
 
 
 

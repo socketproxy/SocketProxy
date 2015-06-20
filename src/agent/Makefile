@@ -14,3 +14,6 @@ all: soxprox-agent
 
 soxprox-agent: soxprox-agent.pl
 	cp soxprox-agent.pl $(BINDIR)/soxprox-agent
+
+clean:
+	rm -f $(BINDIR)/soxprox-agent

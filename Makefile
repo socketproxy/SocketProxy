@@ -8,6 +8,8 @@ export BUILDDIR = $(PWD)/bin
 export BINDIR = $(PWD)/bin
 export LIBDIR = $(PWD)/lib
 
+all: agent server library
+
 agent:
 	$(MAKE) -C src agent
 
@@ -39,5 +41,6 @@ diff:
 	git diff --cached
 
 clean:
-	rm -r build/*
-
+	rm -f soxprox_debug.err  soxprox_debug.log
+	#rm -f $(BUILDDIR)/*
+	$(MAKE) -C src clean

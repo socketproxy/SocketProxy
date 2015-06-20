@@ -14,3 +14,6 @@ all: soxprox
 
 soxprox:
 	cp soxprox.pl $(BINDIR)/soxprox
+
+clean:
+	rm -f $(BINDIR)/soxprox
