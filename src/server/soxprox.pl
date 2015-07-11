@@ -22,9 +22,21 @@
 use strict;
 use File::Basename;
 use IO::Socket::UNIX;
-my $debug = 0;
+use Getopt::Std;
+
 my $client_fifo_mask = 0777;
 my %alive;
+
+my $debug;
+our $opt_d;
+
+getopts('d');
+
+if ($opt_d) {
+	$debug = 1;
+} else {
+	$debug = 0;
+}
 
 ###
 # soxprox.pl -- The server component of Socket Proxy.
