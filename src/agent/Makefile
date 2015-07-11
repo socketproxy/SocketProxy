@@ -16,4 +16,6 @@ soxprox-agent: soxprox-agent.pl
 	cp soxprox-agent.pl $(BINDIR)/soxprox-agent
 
 clean:
-	rm -f $(BINDIR)/soxprox-agent
+	rm -f 	$(BINDIR)/soxprox-agent 	\
+		$(BINDIR)/soxprox_debug.err	\
+		$(BINDIR)/soxprox_debug.log

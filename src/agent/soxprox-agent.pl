@@ -23,11 +23,12 @@ use strict;
 use Socket;
 use Errno;
 
+use Getopt::Std;
 
 
 # Design note: using Socket instead of IO::Socket because
 # according to the man page it is a h2xs tranlation of the
-# C-based socket.h. "This means that it has a far more likely
+# C-based socket.h. This means that it has a far greater
 # chance of getting the numbers right. This includes all of the
 # commonly used pound-defines like AF_INET, SOCK_STREAM, etc.
 
@@ -38,7 +39,17 @@ use Errno;
 #
 
 # Set to create debug log files
-my $debug=1;
+my $debug;
+
+our ($opt_d);
+getopts('d');
+
+if($opt_d) {
+	$debug = 1;
+} else {
+	$debug = 0;
+}
+
 
 # Vector for the various commands possible.
 my %agent_commands;
