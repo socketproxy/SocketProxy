@@ -43,19 +43,19 @@ socket(int family, int type, int protocol)
     __sp_serialize_int(&req, "protocol", protocol);
     __sp_serialize_finalize( &req );
 
-    if (DEBUG) {
+    #ifdef DEBUG
         printf ( "About to call server\n" );
         printf ( "Call: (%s)\n", __sp_serialize_tostring(&req));
-    }
+    #endif
 
     if ( (resp = __sp_call_server(&req)) == (__sp_response)NULL ) {
         return -1;
     }
 
-    if (DEBUG) {
+    #ifdef DEBUG
         printf ( "Finished call to server\nResp:(%s)\n",
                 __sp_serialize_tostring(&resp) );
-    }
+    #endif
 
     free(req);
 
@@ -112,9 +112,9 @@ connect ( int sockfd, const struct sockaddr *serv_addr, socklen_t addrlen)
             return -1;
         }
 
-        if(DEBUG){
+        #ifdef DEBUG
             printf ( "my sin_addr: %s\n", sin_addr );
-        }
+        #endif
         __sp_serialize_str(&req, "sin_addr", sin_addr);
         
         break;
@@ -158,19 +158,19 @@ connect ( int sockfd, const struct sockaddr *serv_addr, socklen_t addrlen)
 
     __sp_serialize_finalize( &req );
 
-    if (DEBUG) {
+    #ifdef DEBUG
         printf ( "About to call server\n" );
         printf ( "Call: (%s)\n", __sp_serialize_tostring(&req));
-    }
+    #endif
 
     if ( (resp = __sp_call_server(&req)) == (__sp_response)NULL ) {
         return -1;
     }
 
-    if (DEBUG) {
+    #ifdef DEBUG
         printf ( "Finished call to server\nResp:(%s)\n",
                 __sp_serialize_tostring(&resp) );
-    }
+    #endif
 
     free(req);
 
@@ -181,14 +181,14 @@ connect ( int sockfd, const struct sockaddr *serv_addr, socklen_t addrlen)
 
         free(resp);
 
-        if (DEBUG) {
+        #ifdef DEBUG
             printf ( " About to strcmp: %s \n", errnostr);
-        }
+        #endif
 
         if ( strcmp ( errnostr, "ECONNREFUSED" ) ) {
-            if ( DEBUG ) {
-                printf ( "SEtting errno accordingly\n" );
-            }
+            #ifdef DEBUG
+                printf ( "Setting errno accordingly\n" );
+            #endif
             errno = ECONNREFUSED;
         }
     }
