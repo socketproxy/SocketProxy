@@ -65,7 +65,9 @@ if ($debug) {
     open ( DEBUG, ">soxprox_debug.log" ) or die "Couldn't open debug log";
 }
 
-print DEBUG "Debug mode on\n";
+if ( $debug ) {
+	print DEBUG "Debug mode on\n";
+}
 
 # Set up signal handlers.
 $SIG{INT} = \&sig_int;

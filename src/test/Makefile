@@ -1,13 +1,32 @@
+# (c) 2015 Mike Doyle
+#
+#    This file is part of SocketProxy.
+#
+#    SocketProxy is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation, either version 2 of the License, or
+#    (at your option) any later version.
+#
+#    SocketProxy is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License
+#    along with SocketProxy.  If not, see <http://www.gnu.org/licenses/>.
+#
 .PHONY: test clean bin_targets lib_targets one socket_test libmike.so.1 
 .PHONY: fake_socket
 
 CC=cc
-BUILDDIR ?= .
-BINDIR ?= .
-LIBDIR ?= .
+BUILDDIR ?= $(PWD)
+BINDIR ?= $(PWD)
+LIBDIR ?= $(PWD)
 CFLAGS = -I../library
+CCFLAGS =
 SOFLAGS = -shared -Wl,-soname,libmike -fPIC
 
+export BUILDDIR BINDIR LIBDIR
 SRCDIR ?= ..
 
 BIN_TARGETS = serialize_test socketpair_test socket_test test_client \
@@ -17,6 +36,11 @@ LIB_TARGETS = fake_socket.c fake_malloc.c
 SRC = fake_malloc.c fake_socket.c serialize_test.c socketpair_test.c \
 	socket_test.c test_client.c test_is_closed.c
 OBJ = $(SRC:%.c=%.o)
+
+debug: CCFLAGS += -DDEBUG -g
+
+profile: CCFLAGS += -pg
+profile: socket_test
 
 test_client:
 	$(CC) -o $(BINDIR)/test_client test_client.c
@@ -33,10 +57,19 @@ $(BINDIR)/%: %.o
 lib_targets: $(LIBDIR)/$(LIB_TARGETS)
 one: socket_test
 
-some: socket_test serialize_test fake_socket
+some: agent_test
+#some: socket_test serialize_test fake_socket
+
+agent_test: libmike.so.1
+	$(CC) -o $(BUILDDIR)/test_client test_client.c
+	$(MAKE) -C ../agent soxprox-agent
+	$(MAKE) -C ../server soxprox
+	$(BUILDDIR)/soxprox 				\
+		--agent=$(BUILDDIR)/soxprox-agent 	\
+		--client=$(BUILDDIR)/test_client
 
 socket_test: socket_test.o
-	$(CC) -o $(BUILDDIR)/socket_test socket_test.o
+	$(CC) $(CCFLAGS) -o $(BUILDDIR)/socket_test socket_test.o
 
 serialize_test: serialize_test.o
 	$(CC) -o $(BUILDDIR)/serialize_test 	\
@@ -60,5 +93,8 @@ clean:
 	rm -f $(OBJ)
 	cd $(BUILDDIR)
 	rm -f $(BIN_TARGETS)
+	rm -f gmon.out
 	cd $(LIBDIR)
 	rm -f libmike.so.1
+	cd $(BINDIR)
+	rm -f soxprox soxprox-agent
