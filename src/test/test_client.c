@@ -80,7 +80,7 @@ main(void)
 {
 
     if (DEBUG) {
-        printf ( "Debug mode on\n");
+        printf ( "test client Debug mode on\n");
     }
 
     int foo, bar, baz, qux;

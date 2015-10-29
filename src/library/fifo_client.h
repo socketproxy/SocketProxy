@@ -45,6 +45,15 @@
  */
 __sp_response __sp_call_server( __sp_request *req );
 
+/***
+ * __sp_fifo_call_server -- This function takes in a char * and sends it
+ * to the socket proxy server process over a fifo. It is called from
+ * __sp_call_server only. It returns a malloc'd char * which must be
+ * freed by the caller
+ */ 
+char * __sp_fifo_call_server(char *mesg);
+
+
 /* __sp_get_cmd_fifo_name()
  *
  * returns a malloc'd copy of the filename of the fifo used to

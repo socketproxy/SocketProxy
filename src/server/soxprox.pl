@@ -211,10 +211,13 @@ make_client {
         pause(); 
 
         # Make our environment what we want here:
-        $ENV{LD_PRELOAD} = 'lib/libmike.so.1';
+        if ( ! -f $ENV{LIBDIR} . '/libmike.so.1' ) {
+		die "Can't find my lib. libdir is " . $ENV{LIBDIR};
+	}
+        $ENV{LD_PRELOAD} = $ENV{LIBDIR} . '/libmike.so.1';
 
         exec($client_cmd)
-            or die('Failed to exec client: $!');
+            or die('Failed to exec client: $!. Libdir is ' . $ENV{LIBDIR});
 
     } else { # Parent
 
@@ -231,6 +234,7 @@ make_client {
             || die "Couldn't make fifo $command_fifo: $!";
 
 
+sleep ( 3 );
         kill ( 'ALRM', $rv );
 
         return ( $rv, $command_fifo );
@@ -267,7 +271,11 @@ null_sig_catcher {
 sub
 cleanup {
 
-    if ( exists($alive{$client_pid}) && $alive{$client_pid} == 1 ) {
+
+    if  ( ( defined $client_pid ) &&
+          ( exists($alive{$client_pid}) ) && 
+          ( $alive{$client_pid} == 1 ) 
+	){
         kill ( 'INT', $client_pid );
         if ( waitpid ($client_pid, 0) == $client_pid ) {
             $alive{$client_pid} = 0;
@@ -275,7 +283,10 @@ cleanup {
     }
 
 
-    if ( exists($alive{$agent_pid}) && $alive{$agent_pid} == 1 ) {
+    if ( ( defined $agent_pid ) &&
+	 ( exists($alive{$agent_pid})) && 
+	 ( $alive{$agent_pid} == 1 ) 
+	){
         kill ( 'INT', $agent_pid );
         if ( waitpid ($agent_pid, 0) == $agent_pid ) {
             $alive{$agent_pid} = 0;

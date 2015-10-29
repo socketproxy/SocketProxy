@@ -32,6 +32,46 @@ __sp_call_server( __sp_request *req )
 {
 
     /***
+     * Variable declarations
+     */
+    
+    /* The message to send */
+    char *mesg;
+    char *resp_str;
+
+    __sp_response resp;
+
+    /***
+      * Initialization
+      */
+
+    mesg = *((char **)req);
+
+    #ifdef DEBUG
+        printf( "message to send to sfcs: %s\n", mesg );
+    #endif
+
+
+    resp_str = __sp_fifo_call_server(mesg);
+
+    #ifdef DEBUG
+        printf( "message received from sfcs: %s\n", resp_str );
+    #endif
+
+    
+}
+
+/***
+ * __sp_fifo_call_server -- This function takes in a char * and sends it
+ * to the socket proxy server process over a fifo. It is called from
+ * __sp_call_server only. It returns a malloc'd char * which must be
+ * freed by the caller
+ */
+char *
+__sp_fifo_call_server(char *mesg)
+{
+
+    /***
      * XXX: Work in progress: chaning this code over from using fifos to 
      * using unix domain sockets. This will likely involve replacing this
      * file entirely.
@@ -41,12 +81,6 @@ __sp_call_server( __sp_request *req )
      * Variable declarations 
      */
      
-    /*
-     * The message to send.
-     */
-
-    char *mesg;
-
     /* file name and descriptor of the "command fifo" communications 
      * channel to the server 
      */
@@ -59,24 +93,22 @@ __sp_call_server( __sp_request *req )
 
     /* temp variable for reading the response */
     int n;
-    int bufsize = BUFSIZE;
     char buf[BUFSIZE];
-
-    /* return variable for the response */
-    __sp_response resp;
-
+    char *resp;
 
 
     /***
-     *Initialization. 
+     * Initialization. 
      * - Get the name of the communications path to the soxprox server,
      * - Set flags and modes for the calls to open,
      */
 
-    mesg = *((char **)req);
-
     if ( (cmdfifoname = __sp_get_cmd_fifo_name() ) == NULL ) {
-        return (__sp_response)NULL;
+	#ifdef DEBUG
+		fprintf(stderr, "error at sp_get_cmd_fifo_name\n");
+	#endif
+
+        return NULL;
     }
 
     #ifdef DEBUG
@@ -97,11 +129,17 @@ __sp_call_server( __sp_request *req )
      * Send a request 
      */
     if ( (cmdfd = xopenx ( cmdfifoname, callflags, callmode )) == -1 ){
-        return (__sp_response)NULL;
+	#ifdef DEBUG
+		fprintf(stderr, "error at xopenx\n");
+	#endif
+        return NULL;
     }
 
     if ( (xwritex ( cmdfd, mesg, strlen( mesg ) +1 )) == -1 ){
-        return (__sp_response)NULL;
+	#ifdef DEBUG
+		fprintf(stderr, "error at xwritex\n");
+	#endif
+        return NULL;
     }
 
     xclosex ( cmdfd );
@@ -110,13 +148,16 @@ __sp_call_server( __sp_request *req )
     /*** 
      * Receive a response 
      */
-    bzero ( buf, bufsize );
+    bzero ( buf, BUFSIZE );
 
     #ifdef DEBUG
         printf (" Just before xopenx\n");
     #endif
     if ( (cmdfd = xopenx ( cmdfifoname, respflags, respmode )) == -1 ){
-        return (__sp_response)NULL;
+	#ifdef DEBUG
+		fprintf(stderr, "error at xopenx\n");
+	#endif
+        return NULL;
     }
 
     #ifdef DEBUG
@@ -124,7 +165,7 @@ __sp_call_server( __sp_request *req )
     #endif
 
 
-    while ( (n = xreadx ( cmdfd, buf, bufsize )) > 0 ) {
+    while ( (n = xreadx ( cmdfd, buf, BUFSIZE )) > 0 ) {
         asprintf ( &resp, "%s%s\n", resp, buf ); 
     }
     
@@ -152,6 +193,9 @@ __sp_get_cmd_fifo_name()
     ppid = getppid();
 
     if ( asprintf(&s, "/tmp/soxprox-%d-%d/command_fifo", pid, ppid) == -1 ){
+	#ifdef DEBUG
+		fprintf(stderr, "error at asprintf\n");
+	#endif
         return NULL;
     }
 

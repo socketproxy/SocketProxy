@@ -41,10 +41,10 @@ use Getopt::Std;
 # Set to create debug log files
 my $debug;
 
-our ($opt_d);
+our $opt_d = 0;
 getopts('d');
 
-if($opt_d) {
+if($opt_d == 1) {
 	$debug = 1;
 } else {
 	$debug = 0;

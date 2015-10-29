@@ -64,12 +64,13 @@ agent_test: libmike.so.1
 	$(CC) -o $(BUILDDIR)/test_client test_client.c
 	$(MAKE) -C ../agent soxprox-agent
 	$(MAKE) -C ../server soxprox
-	$(BUILDDIR)/soxprox 				\
-		--agent=$(BUILDDIR)/soxprox-agent 	\
+	$(BUILDDIR)/soxprox --debug			\
+		--agent="$(BUILDDIR)/soxprox-agent -d" 	\
 		--client=$(BUILDDIR)/test_client
 
 socket_test: socket_test.o
 	$(CC) $(CCFLAGS) -o $(BUILDDIR)/socket_test socket_test.o
+	$(BUILDDIR)/socket_test
 
 serialize_test: serialize_test.o
 	$(CC) -o $(BUILDDIR)/serialize_test 	\
@@ -78,15 +79,17 @@ serialize_test: serialize_test.o
 		serialize_test.o 
 	$(BUILDDIR)/serialize_test
 
-libmike.so.1: fake_socket.c
-	$(CC) -o $(LIBDIR)/libmike.so.1		\
+libmike.so.1:
+	$(MAKE) -C ../library libmike.so.1
+
+fakesock.so.1: fake_socket.c
+	$(CC) -o $(LIBDIR)/fakesock.so.1	\
 		$(CFLAGS)			\
 		$(SOFLAGS)			\
 		fake_socket.c
 
-
-fake_socket: socket_test libmike.so.1
-	LD_PRELOAD="$(LIBDIR)/libmike.so.1" $(BUILDDIR)/socket_test
+fake_socket: socket_test fakesock.so.1
+	LD_PRELOAD="$(LIBDIR)/fakesock.so.1" $(BUILDDIR)/socket_test
 
 
 clean:
@@ -94,7 +97,8 @@ clean:
 	cd $(BUILDDIR)
 	rm -f $(BIN_TARGETS)
 	rm -f gmon.out
+	rm -f soxprox_debug.err soxprox_debug.log
 	cd $(LIBDIR)
-	rm -f libmike.so.1
+	rm -f libmike.so.1 fakesock.so.1
 	cd $(BINDIR)
 	rm -f soxprox soxprox-agent
