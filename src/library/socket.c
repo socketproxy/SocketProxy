@@ -22,9 +22,7 @@
 #include "fifo_client.h"
 #include <errno.h>
 #include <string.h>
-#ifdef DEBUG
-#  include <stdio.h>
-#endif
+#include "xdebugx.h"
 
 
 
@@ -43,19 +41,17 @@ socket(int family, int type, int protocol)
     __sp_serialize_int(&req, "protocol", protocol);
     __sp_serialize_finalize( &req );
 
-    #ifdef DEBUG
-        printf ( "About to call server\n" );
-        printf ( "Call: (%s)\n", __sp_serialize_tostring(&req));
-    #endif
+    DEBUG_PRINTF ( "%s:%d: About to call server\n", __FILE__, __LINE__);
+    DEBUG_PRINTF ( "%s:%d: Call: (%s)\n", 
+		__FILE__, __LINE__, __sp_serialize_tostring(&req));
 
     if ( (resp = __sp_call_server(&req)) == (__sp_response)NULL ) {
         return -1;
     }
 
-    #ifdef DEBUG
-        printf ( "Finished call to server\nResp:(%s)\n",
+    DEBUG_PRINTF ( "%s:%d: Finished call to server\nResp:(%s)\n",
+		__FILE__, __LINE__, 
                 __sp_serialize_tostring(&resp) );
-    #endif
 
     free(req);
 
@@ -112,9 +108,8 @@ connect ( int sockfd, const struct sockaddr *serv_addr, socklen_t addrlen)
             return -1;
         }
 
-        #ifdef DEBUG
-            printf ( "my sin_addr: %s\n", sin_addr );
-        #endif
+        DEBUG_PRINTF ( "%s:%d: my sin_addr: %s\n", 
+		__FILE__, __LINE__, sin_addr );
         __sp_serialize_str(&req, "sin_addr", sin_addr);
         
         break;
@@ -158,19 +153,17 @@ connect ( int sockfd, const struct sockaddr *serv_addr, socklen_t addrlen)
 
     __sp_serialize_finalize( &req );
 
-    #ifdef DEBUG
-        printf ( "About to call server\n" );
-        printf ( "Call: (%s)\n", __sp_serialize_tostring(&req));
-    #endif
+    DEBUG_PRINTF ( "%s:%d: About to call server\n", __FILE__, __LINE__ );
+    DEBUG_PRINTF ( "%s:%d: Call: (%s)\n",
+		__FILE__, __LINE__, __sp_serialize_tostring(&req) );
 
     if ( (resp = __sp_call_server(&req)) == (__sp_response)NULL ) {
         return -1;
     }
 
-    #ifdef DEBUG
-        printf ( "Finished call to server\nResp:(%s)\n",
-                __sp_serialize_tostring(&resp) );
-    #endif
+    DEBUG_PRINTF ( "%s:%d: Finished call to server\n", __FILE__, __LINE__ );
+    DEBUG_PRINTF ( "%s:%d: Resp:(%s)\n",
+                __FILE__, __LINE__, __sp_serialize_tostring(&resp) );
 
     free(req);
 
@@ -181,14 +174,12 @@ connect ( int sockfd, const struct sockaddr *serv_addr, socklen_t addrlen)
 
         free(resp);
 
-        #ifdef DEBUG
-            printf ( " About to strcmp: %s \n", errnostr);
-        #endif
+        DEBUG_PRINTF ("%s:%d: About to strcmp: %s \n",
+		 __FILE__, __LINE__, errnostr);
 
         if ( strcmp ( errnostr, "ECONNREFUSED" ) ) {
-            #ifdef DEBUG
-                printf ( "Setting errno accordingly\n" );
-            #endif
+            DEBUG_PRINTF ("%s:%d: Setting errno accordingly\n", 
+			__FILE__, __LINE__ );
             errno = ECONNREFUSED;
         }
     }

@@ -15,7 +15,7 @@
 #    You should have received a copy of the GNU General Public License
 #    along with SocketProxy.  If not, see <http://www.gnu.org/licenses/>.
 #
-.PHONY: test clean bin_targets lib_targets one socket_test libmike.so.1 
+.PHONY: test clean bin_targets lib_targets one socket_test 
 .PHONY: fake_socket
 
 CC=cc
@@ -60,13 +60,24 @@ one: socket_test
 some: agent_test
 #some: socket_test serialize_test fake_socket
 
-agent_test: libmike.so.1
-	$(CC) -o $(BUILDDIR)/test_client test_client.c
+soxprox-agent:
 	$(MAKE) -C ../agent soxprox-agent
+
+soxprox:
 	$(MAKE) -C ../server soxprox
+
+libmike.so.1:
+	$(MAKE) -C ../library libmike.so.1
+
+agent_test: libmike.so.1 soxprox soxprox-agent test_client
 	$(BUILDDIR)/soxprox --debug			\
 		--agent="$(BUILDDIR)/soxprox-agent -d" 	\
 		--client=$(BUILDDIR)/test_client
+
+nc_test: libmike.so.1 soxprox soxprox-agent 
+	$(BUILDDIR)/soxprox --debug			\
+		--agent="$(BUILDDIR)/soxprox-agent -d" 	\
+		--client="nc -z 127.0.0.1 80"
 
 socket_test: socket_test.o
 	$(CC) $(CCFLAGS) -o $(BUILDDIR)/socket_test socket_test.o
@@ -79,9 +90,6 @@ serialize_test: serialize_test.o
 		serialize_test.o 
 	$(BUILDDIR)/serialize_test
 
-libmike.so.1:
-	$(MAKE) -C ../library libmike.so.1
-
 fakesock.so.1: fake_socket.c
 	$(CC) -o $(LIBDIR)/fakesock.so.1	\
 		$(CFLAGS)			\
@@ -91,6 +99,8 @@ fakesock.so.1: fake_socket.c
 fake_socket: socket_test fakesock.so.1
 	LD_PRELOAD="$(LIBDIR)/fakesock.so.1" $(BUILDDIR)/socket_test
 
+test_nc: libmike.so.1 soxprox soxprox-agent 
+	
 
 clean:
 	rm -f $(OBJ)

@@ -19,6 +19,7 @@
  */
 
 #include "serialize.h"
+#include "xdebugx.h"
 #include <limits.h>
 #include <stdio.h>
 #include <string.h>
@@ -129,7 +130,7 @@ __sp_deserialize_int( __sp_request *req, const char *name )
         return -1;
     }
     if ( *endp != '\n' ) {
-        printf("Failing here (%c)\n", *endp);
+        DEBUG_PRINTF("%s:%d Failing here (%c)\n", __FILE__, __LINE__, *endp);
         return -1;
     }
     if ( (val == LONG_MIN || val == LONG_MAX) && 

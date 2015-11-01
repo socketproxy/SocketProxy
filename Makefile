@@ -24,6 +24,8 @@ export LIBDIR = $(PWD)/lib
 
 all: agent server library
 
+add: clean
+	git add .
 agent:
 	$(MAKE) -C src agent
 

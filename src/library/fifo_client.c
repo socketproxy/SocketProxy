@@ -17,6 +17,8 @@
  *    along with SocketProxy.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "xdebugx.h"
+
 #include "fifo_client.h"
 #define BUFSIZE 512
 #include <stdio.h>
@@ -47,16 +49,12 @@ __sp_call_server( __sp_request *req )
 
     mesg = *((char **)req);
 
-    #ifdef DEBUG
-        printf( "message to send to sfcs: %s\n", mesg );
-    #endif
+    DEBUG_PRINTF( "message to send to sfcs: %s\n", mesg );
 
 
     resp_str = __sp_fifo_call_server(mesg);
 
-    #ifdef DEBUG
-        printf( "message received from sfcs: %s\n", resp_str );
-    #endif
+    DEBUG_PRINTF( "message received from sfcs: %s\n", resp_str );
 
     
 }
@@ -104,16 +102,13 @@ __sp_fifo_call_server(char *mesg)
      */
 
     if ( (cmdfifoname = __sp_get_cmd_fifo_name() ) == NULL ) {
-	#ifdef DEBUG
-		fprintf(stderr, "error at sp_get_cmd_fifo_name\n");
-	#endif
+	DEBUG_PRINTF("error at file %s line %d\n", __FILE__, __LINE__);
 
         return NULL;
     }
 
-    #ifdef DEBUG
-        printf( "Cmd fifo name: %s\n", cmdfifoname );
-    #endif
+    DEBUG_PRINTF( "%s:%d: Cmd fifo name: %s\n", __FILE__, __LINE__, 
+		cmdfifoname);
 
     callflags = O_WRONLY;
     callmode = S_IRUSR; /*Note this should be ignored*/
@@ -129,16 +124,12 @@ __sp_fifo_call_server(char *mesg)
      * Send a request 
      */
     if ( (cmdfd = xopenx ( cmdfifoname, callflags, callmode )) == -1 ){
-	#ifdef DEBUG
-		fprintf(stderr, "error at xopenx\n");
-	#endif
+	DEBUG_PRINTF("%s:%d: error at xopenx\n", __FILE__, __LINE__);
         return NULL;
     }
 
     if ( (xwritex ( cmdfd, mesg, strlen( mesg ) +1 )) == -1 ){
-	#ifdef DEBUG
-		fprintf(stderr, "error at xwritex\n");
-	#endif
+	DEBUG_PRINTF("%s:%d: error at xwritex\n", __FILE__, __LINE__);
         return NULL;
     }
 
@@ -150,19 +141,10 @@ __sp_fifo_call_server(char *mesg)
      */
     bzero ( buf, BUFSIZE );
 
-    #ifdef DEBUG
-        printf (" Just before xopenx\n");
-    #endif
     if ( (cmdfd = xopenx ( cmdfifoname, respflags, respmode )) == -1 ){
-	#ifdef DEBUG
-		fprintf(stderr, "error at xopenx\n");
-	#endif
+	DEBUG_PRINTF("%s:%d: error at xopenx\n", __FILE__, __LINE__);
         return NULL;
     }
-
-    #ifdef DEBUG
-        printf (" Just after xopenx\n");
-    #endif
 
 
     while ( (n = xreadx ( cmdfd, buf, BUFSIZE )) > 0 ) {
@@ -193,9 +175,7 @@ __sp_get_cmd_fifo_name()
     ppid = getppid();
 
     if ( asprintf(&s, "/tmp/soxprox-%d-%d/command_fifo", pid, ppid) == -1 ){
-	#ifdef DEBUG
-		fprintf(stderr, "error at asprintf\n");
-	#endif
+	DEBUG_PRINTF("%s:%d: error at asprintf\n", __FILE__, __LINE__);
         return NULL;
     }
 
