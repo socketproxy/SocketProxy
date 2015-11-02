@@ -118,10 +118,12 @@ while (1) {
 
 }
 
+include(../shared/soxprox-shared.pl)
 
 
 ###
 # Parse the command line
+#
 #
 sub
 parse_cmdline {

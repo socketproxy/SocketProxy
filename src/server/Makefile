@@ -26,8 +26,9 @@ syntax:
 
 all: soxprox
 
-soxprox:
-	cp soxprox.pl $(BINDIR)/soxprox
+soxprox: soxprox.pl.m4
+	m4 soxprox.pl.m4 > $(BINDIR)/soxprox
+	chmod +x $(BINDIR)/soxprox
 
 clean:
 	rm -f $(BINDIR)/soxprox

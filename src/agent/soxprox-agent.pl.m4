@@ -22,6 +22,7 @@
 use strict;
 use Socket;
 use Errno;
+use Carp;
 
 use Getopt::Std;
 
@@ -60,14 +61,13 @@ my $sock_iter = 1;
 
 if ($debug) {
 #   open(OLD_STDERR,">&STDERR") or die "Failed to save STDERR";
-    close ( STDERR );
-    open (STDERR,">soxprox_debug.err") or die "Failed to redirect STDERR";
-    open ( DEBUG, ">soxprox_debug.log" ) or die "Couldn't open debug log";
+#    close ( STDERR );
+#    open (STDERR,">soxprox_debug.err") or die "Failed to redirect STDERR";
+#    open ( DEBUG, ">soxprox_debug.log" ) or die "Couldn't open debug log";
 }
 
-if ( $debug ) {
-	print DEBUG "Debug mode on\n";
-}
+debug_print ("Debug mode on\n");
+
 
 # Set up signal handlers.
 $SIG{INT} = \&sig_int;
@@ -95,8 +95,6 @@ while (1) {
             cleanup();
         }
 
-        if( $debug ) { print DEBUG "Gotta char: $buf, n: $n\n"; }
-
         next if ( $req eq "" and $buf eq "\0" );
 
         if ( $buf eq "\n" ) {
@@ -111,23 +109,20 @@ while (1) {
         $req .= $buf;
     }
 
-    if ( $debug ) {
-        print DEBUG "Agent received request ($req)\n";
-    }
+    debug_print ( "Agent received request ($req)\n" );
 
     # Parse that request
     my $req_ref = parse_request($req);
 
     if ( !defined($req_ref) ) {
-        print STDERR "Undefined req_ref\n";
-        exit 1;
+        die ( "Undefined req_ref\n" );
     }
 
     if ( $debug ) {
-        print DEBUG "Command: " . $req_ref->{command} . "\n"; 
+        debug_print ( "Command: " . $req_ref->{command} . "\n" ); 
         my $foo = $req_ref->{params};
         foreach my $key ( keys(%$foo) ) {
-            print DEBUG "\t$key:\t" . $req_ref->{params}->{$key} . "\n";
+            debug_print (  "\t$key:\t" . $req_ref->{params}->{$key} . "\n" );
         }
     }
 
@@ -141,9 +136,7 @@ while (1) {
 
     my $resp = &$func_ref($req_ref);
 
-    if ( $debug ) {
-        print DEBUG "Agent sending response to server: ($resp)\n";
-    }
+    debug_print ( "Agent sending response to server: ($resp)\n") ;
 
     syswrite ( STDOUT, "$resp\n" );
 
@@ -155,6 +148,8 @@ while (1) {
 ###
 # Subroutines
 #
+
+include(../shared/soxprox-shared.pl)
 
 sub
 parse_request
@@ -170,7 +165,7 @@ parse_request
         my $line = shift @message_lines;
 
 
-        if ( $debug ) { print DEBUG "Line to parse: ($line)\n"; }
+        debug_print ( "Line to parse: ($line)\n");  
         
         if ( $line !~ /^([_a-zA-Z][_a-zA-Z0-9]*)$/ ) {
             print STDERR "First line does not match a command name: ($line)\n";
@@ -181,7 +176,7 @@ parse_request
 
         foreach $line (@message_lines) {
 
-            if ( $debug ) { print DEBUG "Line to parse: ($line)\n"; }
+            debug_print ( "Line to parse: ($line)\n");
             if ( $line !~ /^([_a-zA-Z][-_a-zA-Z0-9]*):\s+([\w\.]+)$/ ) {
                 print STDERR "Line does not match a parameter definition\n";
                 return undef;
@@ -223,7 +218,7 @@ agent_command_socket {
     return 1 unless     ( $cmd_hash->{params}->{family} =~ /^-?\d+$/ );
     return 1 unless     ( $cmd_hash->{params}->{type} =~ /^-?\d+$/ );
     return 1 unless     ( $cmd_hash->{params}->{protocol} =~ /^-?\d+$/ );
-    if ( $debug ) { print DEBUG "in agent_command_socket\n"; }
+    debug_print ( "in agent_command_socket\n" );
 
     # Now all we lack is finishing up
     my $retval = socket (   my $tempsock,
@@ -248,7 +243,7 @@ agent_command_socket {
     # Stash the socket in the global socket hash for later use.
     $sockets{$sock_iter} = $tempsock;
 
-    print DEBUG "Created socket # $tempsock " . fileno($tempsock). "\n";
+    debug_print ("Created socket # $tempsock " . fileno($tempsock). "\n");
 
     # Create a response and return it.
     $resp = "response\n"
@@ -286,13 +281,13 @@ agent_command_connect {
 
     return 1 unless param_is_uint ( $cmd_hash->{params}, "sockfd" );
     if ( !exists ( $sockets{$cmd_hash->{params}->{sockfd}} ) ) {
-        print DEBUG "File descriptor is not a socket.\n";
+        debug_print ( "File descriptor is not a socket.\n");
         return 1;
     }
 
     my $sockfd = $sockets{$cmd_hash->{params}->{sockfd}};
 
-    print DEBUG "Connect with socket # $sockfd " . fileno($sockfd). "\n";
+    debug_print ( "Connect with socket # $sockfd " . fileno($sockfd). "\n");
     
 
     return 1 unless param_is_something (
@@ -302,7 +297,7 @@ agent_command_connect {
         "address family"
     );
 
-    if ( $debug ) { print DEBUG "in agent_command_socket\n"; }
+    debug_print ( "in agent_command_socket\n" ) ;
 
 
     # Now all we lack is finishing up
@@ -347,8 +342,8 @@ sig_int {
 
 sub
 cleanup {
-    close ( DEBUG );
-    close ( STDERR );
+#    close ( DEBUG );
+#    close ( STDERR );
     exit(0);
 }
 
@@ -391,18 +386,12 @@ param_is_something {
     my $type = shift;
 
     if ( !exists($hashref->{$name}) ) {
-        if ( $debug ) {
-            print DEBUG "No parameter $name\n";
-        }
+        debug_print ( "No parameter $name\n");
         return 0;
     }
 
     if ( $hashref->{$name} !~ /$regex/) {
-        if ( $debug ) {
-            print DEBUG "$name is not a valid $type: " 
-                . $hashref->{$name} 
-                . "\n";
-        }
+        debug_print ("$name is not a valid $type: " . $hashref->{$name} . "\n");
         return 0;
     }
 

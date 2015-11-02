@@ -26,8 +26,9 @@ syntax:
 
 all: soxprox-agent
 
-soxprox-agent: soxprox-agent.pl
-	cp soxprox-agent.pl $(BINDIR)/soxprox-agent
+soxprox-agent: soxprox-agent.pl.m4
+	m4 soxprox-agent.pl.m4 > $(BINDIR)/soxprox-agent
+	chmod +x $(BINDIR)/soxprox-agent
 
 clean:
 	rm -f 	$(BINDIR)/soxprox-agent 	\
