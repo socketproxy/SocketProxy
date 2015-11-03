@@ -17,18 +17,27 @@
 #    You should have received a copy of the GNU General Public License
 #    along with SocketProxy.  If not, see <http://www.gnu.org/licenses/>.
 
-BUILDDIR ?= .
-BINDIR ?= .
-LIBDIR ?= .
+.PHONY: syntax all clean
 
-syntax:
+# When other Makefiles call this one recursively, the below values are
+# overwritten.
+BINDIR ?= .
+BUILDDIR ?= .
+LIBDIR ?= .
+SRCDIR ?= ..
+export BINDIR BUILDDIR LIBDIR SRCDIR
+
+syntax: soxprox.pl
 	perl -c *.pl
 
 all: soxprox
 
-soxprox: soxprox.pl.m4
-	m4 soxprox.pl.m4 > $(BINDIR)/soxprox
-	chmod +x $(BINDIR)/soxprox
+soxprox.pl: soxprox.pl.m4
+	m4 soxprox.pl.m4 > soxprox.pl
+	chmod +x soxprox.pl
+
+soxprox: soxprox.pl syntax
+	cp soxprox.pl $(BINDIR)/soxprox
 
 clean:
-	rm -f $(BINDIR)/soxprox
+	rm -f $(BINDIR)/soxprox soxprox.pl

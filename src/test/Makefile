@@ -19,15 +19,18 @@
 .PHONY: fake_socket
 
 CC=cc
-BUILDDIR ?= $(PWD)
-BINDIR ?= $(PWD)
-LIBDIR ?= $(PWD)
+
 CFLAGS = -I../library
 CCFLAGS =
 SOFLAGS = -shared -Wl,-soname,libmike -fPIC
 
-export BUILDDIR BINDIR LIBDIR
+# When other makefiles call this one recursively, the below values
+# are overwritten.
+BINDIR ?= $(PWD)
+BUILDDIR ?= $(PWD)
+LIBDIR ?= $(PWD)
 SRCDIR ?= ..
+export BINDIR BUILDDIR LIBDIR SRCDIR
 
 BIN_TARGETS = serialize_test socketpair_test socket_test test_client \
 	test_is_closed

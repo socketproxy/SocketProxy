@@ -57,39 +57,27 @@ while (1) {
     my $req = "";
     my $resp = "";
 
-    if ($debug) {
-        print "Server: In main loop\n";
-    }
+    debug_print ("Server: In main loop\n");
 
     # Read from the client
     open ( CMD_FIFO, "<", $client_cmd_fifo ) or die $!;
 
     while ( sysread ( CMD_FIFO, my $buf, 1024 ) != 0 ){
-        if ($debug) {
-            print "Reading from fifo\n";
-        }
+        debug_print ("Reading from fifo\n");
         $req .= $buf;
     }
     close(CMD_FIFO);
 
-    if ($debug) {
-        print "here's the request: $req\n";
-    }
+    debug_print ("here's the request: $req\n");
 
     # Write to the agent
     syswrite ( $to_agent_fh, $req );
 
-    if ($debug) {
-        print "Finished writing to agent\n";
-    }
+    debug_print ("Finished writing to agent\n");
 
     # Read from the agent
     my $newlines = 0;
     while ( sysread ( $from_agent_fh, my $buf, 1 ) != 0 ){
-
-        if ($debug) {
-            print "Reading from fifo ($buf)\n";
-        }
 
         if ( $buf eq "\n" ) {
             $newlines++;
@@ -102,19 +90,14 @@ while (1) {
         $resp .= $buf;
     }
 
-    if ( $debug ) {
-        print "Server read response from agent: ($resp)\n";
-    }
+    debug_print ("Server read response from agent: ($resp)\n");
 
     # Write to the client
     open (CMD_FIFO, ">", $client_cmd_fifo) or die $!;
     syswrite( CMD_FIFO, "$resp" );
     close (CMD_FIFO);
 
-    if ($debug) {
-        print "Finished writing to client\n";
-    }
-
+    debug_print ("Finished writing to client\n");
 
 }
 
@@ -142,9 +125,7 @@ parse_cmdline {
         exit 0;
     }
 
-    if ($debug) {
-        print "agent command: $agent_cmd, client command: $client_cmd\n";
-    }
+    debug_print ("agent command: $agent_cmd, client command: $client_cmd\n");
 
     if ( $agent_cmd eq '' or $client_cmd eq '' ) {
         usage();
@@ -252,9 +233,7 @@ sig_chld {
     my $dead_pid = wait;
 
     $alive{$dead_pid} = 0;
-    if ( $debug ) {
-        print "$dead_pid died!\n";
-    }
+    debug_print ("$dead_pid died!\n");
 
     cleanup();
 

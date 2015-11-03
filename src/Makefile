@@ -14,21 +14,22 @@
 #    You should have received a copy of the GNU General Public License
 #    along with SocketProxy.  If not, see <http://www.gnu.org/licenses/>.
 #
-.PHONY: test agent server library clean
+.PHONY: agent library server test clean
 
 agent:
 	$(MAKE) -C agent all
 
+library:
+	$(MAKE) -C library library
+
 server:
 	$(MAKE) -C server all
 
-library:
-	$(MAKE) -C library library
 test:
 	$(MAKE) -C test some
 
 clean:
-	$(MAKE) -C test clean
-	$(MAKE) -C library clean
 	$(MAKE) -C agent clean
+	$(MAKE) -C library clean
 	$(MAKE) -C server clean
+	$(MAKE) -C test clean

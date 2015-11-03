@@ -1,0 +1,13 @@
+I have a small amount of code shared between the Perl programs in Socket
+Proxy. I recognize that this code will change over time so I've split
+it out and put it into the src/shared directory. There, instead of creating
+a Perl module which is used by both programs, I've made it a stub file which
+I include using the m4 text processor.
+
+This is a questionable design decision. Here's why I made it.
+
+One of the Perl programs that relies on this shared code, soxprox-agent, 
+is mobile code, meant to be uploaded to a victim computer and executed
+surreptitiously. To be most effective, it must be a text file that can 
+execute on as many systems as possible. Any code that gets uploaded must be
+"compiled" into the same file. 

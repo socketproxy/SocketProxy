@@ -16,12 +16,18 @@
 #    You should have received a copy of the GNU General Public License
 #    along with SocketProxy.  If not, see <http://www.gnu.org/licenses/>.
 
+.PHONY: debug library clean
+
 CFLAGS = -fPIC
 SOFLAGS = -shared -Wl,-soname,libmike 
 
 
-.PHONY: library clean debug
-LIBDIR ?= .
+# When other makefiles call this one recursively, the below values are 
+# overwritten.
+BINDIR   ?= .
+BUILDDIR ?= .
+LIBDIR   ?= .
+SRCDIR   ?= ..
 
 debug: CFLAGS += -DDEBUG -g
 debug: library
@@ -30,9 +36,6 @@ socket.o: socket.c socket.h serialize.h
 	gcc -c socket.c
 
 fifo_client.o: fifo_client.c fifo_client.h serialize.h
-
-clean:
-	rm -f *.o $(LIBDIR)/libmike.so.1
 
 library:
 	gcc $(CFLAGS) -c *.c
@@ -44,3 +47,7 @@ libmike.so.1:
 		$(CFLAGS)		\
 		$(SOFLAGS)		\
 		*.o
+
+clean:
+	rm -f *.o $(LIBDIR)/libmike.so.1
+
