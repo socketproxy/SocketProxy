@@ -1,0 +1,5 @@
+For C, K&f&R without the tabs. This is not my personal fave but it's easy
+to do with indent. I've got a .indent.pro file and a 'make pretty' production
+that's ready to rock.
+
+For Perl... ?!

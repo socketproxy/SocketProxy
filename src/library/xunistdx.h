@@ -31,11 +31,11 @@
  * Forward declarations
  */
 
-ssize_t xreadx ( int fd, void *buf, size_t count ); 
-ssize_t xwritex ( int fd, const void *buf, size_t count ); 
-int xopenx ( const char *pathname, int flags, mode_t mode ); 
-int xcreatx ( const char *pathname, mode_t mode ); 
-int xclosex ( int fd ); 
-int xfcntlx ( int fd, int cmd, struct flock *lock );
+ssize_t xreadx(int fd, void *buf, size_t count);
+ssize_t xwritex(int fd, const void *buf, size_t count);
+int xopenx(const char *pathname, int flags, mode_t mode);
+int xcreatx(const char *pathname, mode_t mode);
+int xclosex(int fd);
+int xfcntlx(int fd, int cmd, struct flock *lock);
 
 #endif

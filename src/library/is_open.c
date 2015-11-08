@@ -27,8 +27,7 @@
  *
  * !!HACK!! This is a hack !!HACK!! See the code for details. !!HACK!!
  */
-int
-__sp_is_open(int fd)
+int __sp_is_open(int fd)
 {
     /* HACK: This implementation of this function relies on a slight
      * inconguity between what the linux read(2) man page says and what
@@ -41,6 +40,5 @@ __sp_is_open(int fd)
      * But in practice, if fd is closed, read will not return zero, it 
      * will return -1 and set errno to EBADF.
      */
-    return (read ( fd, NULL, 0 ))?0:-1;
-} /* end of is_open */
-
+    return (read(fd, NULL, 0)) ? 0 : -1;
+}                               /* end of is_open */

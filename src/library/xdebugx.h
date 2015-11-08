@@ -23,7 +23,7 @@
 
 #define DEBUG_PRINTF(...) do { fprintf( stderr, __VA_ARGS__ ); } while (0)
 
-#else 
+#else
 
 #define DEBUG_PRINTF(...) do { ; } while (0)
 

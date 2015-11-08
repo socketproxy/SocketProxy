@@ -47,7 +47,8 @@ libmike.so.1:
 		$(CFLAGS)		\
 		$(SOFLAGS)		\
 		*.o
-
+pretty:
+	indent *.c *.h
 clean:
-	rm -f *.o $(LIBDIR)/libmike.so.1
+	rm -f *.c~ *.h~ *.o $(LIBDIR)/libmike.so.1
 

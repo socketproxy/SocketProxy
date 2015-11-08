@@ -26,49 +26,47 @@
 
 
 
-int 
-socket(int family, int type, int protocol)
+int socket(int family, int type, int protocol)
 {
 
     __sp_request req;
     __sp_response resp;
     int retval;
 
-    req = __sp_serialize_init( "socket" );
+    req = __sp_serialize_init("socket");
     __sp_serialize_str(&req, "name", "socket");
     __sp_serialize_int(&req, "family", family);
     __sp_serialize_int(&req, "type", type);
     __sp_serialize_int(&req, "protocol", protocol);
-    __sp_serialize_finalize( &req );
+    __sp_serialize_finalize(&req);
 
-    DEBUG_PRINTF ( "%s:%d: About to call server\n", __FILE__, __LINE__);
-    DEBUG_PRINTF ( "%s:%d: Call: (%s)\n", 
-		__FILE__, __LINE__, __sp_serialize_tostring(&req));
+    DEBUG_PRINTF("%s:%d: About to call server\n", __FILE__, __LINE__);
+    DEBUG_PRINTF("%s:%d: Call: (%s)\n",
+                 __FILE__, __LINE__, __sp_serialize_tostring(&req));
 
-    if ( (resp = __sp_call_server(&req)) == (__sp_response)NULL ) {
+    if ((resp = __sp_call_server(&req)) == (__sp_response) NULL) {
         return -1;
     }
 
-    DEBUG_PRINTF ( "%s:%d: Finished call to server\nResp:(%s)\n",
-		__FILE__, __LINE__, 
-                __sp_serialize_tostring(&resp) );
+    DEBUG_PRINTF("%s:%d: Finished call to server\nResp:(%s)\n",
+                 __FILE__, __LINE__, __sp_serialize_tostring(&resp));
 
     free(req);
 
     retval = __sp_deserialize_int(&resp, "retval");
 
-    if (!retval){
+    if (!retval) {
         errno = __sp_deserialize_int(&resp, "errno");
     }
 
     free(resp);
-   
+
     return retval;
 
-} /* end of socket() */
+}                               /* end of socket() */
 
 int
-connect ( int sockfd, const struct sockaddr *serv_addr, socklen_t addrlen)
+connect(int sockfd, const struct sockaddr *serv_addr, socklen_t addrlen)
 {
 
     __sp_request req;
@@ -80,114 +78,110 @@ connect ( int sockfd, const struct sockaddr *serv_addr, socklen_t addrlen)
 
     /* We'll only need one of these */
 
-    req = __sp_serialize_init( "connect" );
+    req = __sp_serialize_init("connect");
     __sp_serialize_str(&req, "name", "connect");
     __sp_serialize_int(&req, "addrlen", addrlen);
     __sp_serialize_int(&req, "sockfd", sockfd);
 
-    switch ( serv_addr->sa_family ) {
-    case AF_INET: {
-        struct sockaddr_in *sin;
-        char sin_addr[INET_ADDRSTRLEN + 1];
+    switch (serv_addr->sa_family) {
+    case AF_INET:{
+            struct sockaddr_in *sin;
+            char sin_addr[INET_ADDRSTRLEN + 1];
 
-        __sp_serialize_str(&req, "sin_family", "AF_INET");
+            __sp_serialize_str(&req, "sin_family", "AF_INET");
 
-        sin = (struct sockaddr_in *)serv_addr;
+            sin = (struct sockaddr_in *) serv_addr;
 
-        __sp_serialize_int(&req, "sin_port", ntohs(sin->sin_port));
+            __sp_serialize_int(&req, "sin_port", ntohs(sin->sin_port));
 
-        bzero( sin_addr, sizeof(sin_addr) );
+            bzero(sin_addr, sizeof(sin_addr));
 
-        if ( inet_ntop ( 
-                serv_addr->sa_family, 
-                &(sin->sin_addr),
-                sin_addr, 
-                sizeof(sin_addr) 
-            ) == NULL
-        ) {
-            return -1;
+            if (inet_ntop(serv_addr->sa_family,
+                          &(sin->sin_addr), sin_addr, sizeof(sin_addr)
+                ) == NULL) {
+                return -1;
+            }
+
+            DEBUG_PRINTF("%s:%d: my sin_addr: %s\n",
+                         __FILE__, __LINE__, sin_addr);
+            __sp_serialize_str(&req, "sin_addr", sin_addr);
+
+            break;
         }
 
-        DEBUG_PRINTF ( "%s:%d: my sin_addr: %s\n", 
-		__FILE__, __LINE__, sin_addr );
-        __sp_serialize_str(&req, "sin_addr", sin_addr);
-        
-        break;
-    }
 
+    case AF_INET6:{
+            struct sockaddr_in6 *sin6;
 
-    case AF_INET6: {
-        struct sockaddr_in6 *sin6;
-
-        __sp_serialize_str(&req, "serv-addr-family", "AF_INET6");
-        sin6 = (struct sockaddr_in6 *)serv_addr;
-        return -1;
-        break;
-    }
+            __sp_serialize_str(&req, "serv-addr-family", "AF_INET6");
+            sin6 = (struct sockaddr_in6 *) serv_addr;
+            return -1;
+            break;
+        }
 
 
 
-    case AF_LOCAL: {
-        struct sockaddr_un *sun;
-        __sp_serialize_str(&req, "serv-addr-family", "AF_LOCAL");
-        sun = (struct sockaddr_un *)serv_addr;
-        return -1;
-        break;
-    }
+    case AF_LOCAL:{
+            struct sockaddr_un *sun;
+            __sp_serialize_str(&req, "serv-addr-family", "AF_LOCAL");
+            sun = (struct sockaddr_un *) serv_addr;
+            return -1;
+            break;
+        }
 
 
 
-    /*case AF_LINK: {*/
-        /*struct sockaddr_dl sdl;*/
+        /*case AF_LINK: { */
+        /*struct sockaddr_dl sdl; */
         /*__sp_serialize_str(&req, "serv-addr-family", "AF_LINK");*/
-        /*sdl = (struct sockaddr_dl)(*serv_addr);*/
-        /*return -1;*/
-        /*break;*/
-    /*}*/
+        /*sdl = (struct sockaddr_dl)(*serv_addr); */
+        /*return -1; */
+        /*break; */
+        /*} */
 
 
     default:
-        free ( req );
+        free(req);
         return -1;
     }
 
-    __sp_serialize_finalize( &req );
+    __sp_serialize_finalize(&req);
 
-    DEBUG_PRINTF ( "%s:%d: About to call server\n", __FILE__, __LINE__ );
-    DEBUG_PRINTF ( "%s:%d: Call: (%s)\n",
-		__FILE__, __LINE__, __sp_serialize_tostring(&req) );
+    DEBUG_PRINTF("%s:%d: About to call server\n", __FILE__, __LINE__);
+    DEBUG_PRINTF("%s:%d: Call: (%s)\n",
+                 __FILE__, __LINE__, __sp_serialize_tostring(&req));
 
-    if ( (resp = __sp_call_server(&req)) == (__sp_response)NULL ) {
+    if ((resp = __sp_call_server(&req)) == (__sp_response) NULL) {
         return -1;
     }
 
-    DEBUG_PRINTF ( "%s:%d: Finished call to server\n", __FILE__, __LINE__ );
-    DEBUG_PRINTF ( "%s:%d: Resp:(%s)\n",
-                __FILE__, __LINE__, __sp_serialize_tostring(&resp) );
+    DEBUG_PRINTF("%s:%d: Finished call to server\n", __FILE__, __LINE__);
+    DEBUG_PRINTF("%s:%d: Resp:(%s)\n",
+                 __FILE__, __LINE__, __sp_serialize_tostring(&resp));
 
     free(req);
 
     retval = __sp_deserialize_int(&resp, "retval");
 
-    if (retval != 0){
+    if (retval != 0) {
         errnostr = __sp_deserialize_str(&resp, "errno");
 
         free(resp);
 
-        DEBUG_PRINTF ("%s:%d: About to strcmp: %s \n",
-		 __FILE__, __LINE__, errnostr);
+        DEBUG_PRINTF("%s:%d: About to strcmp: %s \n",
+                     __FILE__, __LINE__, errnostr);
 
-        if ( strcmp ( errnostr, "ECONNREFUSED" ) ) {
-            DEBUG_PRINTF ("%s:%d: Setting errno accordingly\n", 
-			__FILE__, __LINE__ );
+        if (strcmp(errnostr, "ECONNREFUSED")) {
+            DEBUG_PRINTF("%s:%d: Setting errno accordingly\n",
+                         __FILE__, __LINE__);
             errno = ECONNREFUSED;
         }
     }
 
-   
+
     return retval;
 
-} /* end of connect() */
+}                               /* end of connect() */
 
 /***
  * setsocketopt
@@ -195,7 +189,7 @@ connect ( int sockfd, const struct sockaddr *serv_addr, socklen_t addrlen)
  * TODO: Stop screwing around.
  */
 int setsockopt(int s, int level, int optname,
-                 const void *optval, socklen_t optlen){
+               const void *optval, socklen_t optlen)
+{
     return 0;
 }
-

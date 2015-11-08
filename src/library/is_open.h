@@ -30,8 +30,7 @@
  *
  * !!HACK!! This is a hack !!HACK!! See the code for details. !!HACK!!
  */
-int
-__sp_is_open(int fd);
+int __sp_is_open(int fd);
 
 
 #endif

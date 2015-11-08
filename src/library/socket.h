@@ -30,7 +30,8 @@
 
 int socket(int family, int type, int protocol);
 
-int connect ( int sockfd, const struct sockaddr *serv_addr, socklen_t addrlen);
+int connect(int sockfd, const struct sockaddr *serv_addr,
+            socklen_t addrlen);
 
 
 #endif

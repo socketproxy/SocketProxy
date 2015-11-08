@@ -33,8 +33,7 @@ typedef char *__sp_response;
  *
  * initializs an sp_serialize request or response
  */
-__sp_request 
-__sp_serialize_init(const char *name);
+__sp_request __sp_serialize_init(const char *name);
 
 
 
@@ -43,8 +42,7 @@ __sp_serialize_init(const char *name);
  *
  * prepares an sp message for sending.
  */
-int
-__sp_serialize_finalize( __sp_request *req );
+int __sp_serialize_finalize(__sp_request *req);
 
 
 
@@ -58,8 +56,7 @@ __sp_serialize_finalize( __sp_request *req );
  *
  * uses asprintf
  */
-int
-__sp_serialize_int( __sp_request *req, const char *name, int val );
+int __sp_serialize_int(__sp_request *req, const char *name, int val);
 
 /* __sp_serialze_str
  *
@@ -72,7 +69,7 @@ __sp_serialize_int( __sp_request *req, const char *name, int val );
  * uses asprintf
  */
 int
-__sp_serialize_str( __sp_request *req, const char *name, const char *val );
+__sp_serialize_str(__sp_request *req, const char *name, const char *val);
 
 
 
@@ -84,8 +81,7 @@ __sp_serialize_str( __sp_request *req, const char *name, const char *val );
  *
  * uses asprintf
  */
-int
-__sp_deserialize_int( __sp_request *req, const char *name );
+int __sp_deserialize_int(__sp_request *req, const char *name);
 
 
 
@@ -97,24 +93,21 @@ __sp_deserialize_int( __sp_request *req, const char *name );
  *
  * uses asprintf
  */
-char *
-__sp_deserialize_str( __sp_request *req, const char *name );
+char *__sp_deserialize_str(__sp_request *req, const char *name);
 
 
 /* __sp_serialize_destroy(__sp_request *req)
  *
  * frees the memory used by __sp_request *req
  */
-void
-__sp_serialize_destroy(__sp_request *req);
+void __sp_serialize_destroy(__sp_request *req);
 
 /* __sp_serialize_tostring(__sp_request *req)
  *
  * returns a malloced, human readable string representing req.
  *
  */
-char *
-__sp_serialize_tostring(__sp_request *req);
+char *__sp_serialize_tostring(__sp_request *req);
 
 
 #endif
