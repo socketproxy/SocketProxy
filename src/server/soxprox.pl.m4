@@ -29,59 +29,57 @@ my %alive;
 # soxprox.pl -- The server component of Socket Proxy.
 #
 #
-# roadmap: 
+# roadmap:
 #   parse the command line
 #   make the agent
 #   make the client
 #   pass notes back and forth between the client and the agent.
 #
 
-
 $SIG{CHLD} = \&sig_chld;
-$SIG{INT} = \&sig_int;
-my ($agent_cmd, $client_cmd, $debug) = parse_cmdline();
-my ($agent_pid, $from_agent_fh, $to_agent_fh) = make_agent($agent_cmd);
-my ($client_pid, $client_cmd_fifo) = make_client($client_cmd);
-
-
+$SIG{INT}  = \&sig_int;
+my ( $agent_cmd, $client_cmd,    $debug )       = parse_cmdline();
+my ( $agent_pid, $from_agent_fh, $to_agent_fh ) = make_agent($agent_cmd);
+my ( $client_pid, $client_cmd_fifo ) = make_client($client_cmd);
 
 ###
 # Main loop: pass notes back and forth from the client to the agent.
 #
-# In particular: 
+# In particular:
 #   read from the client,
 #   write to the agent,
 #   read from the agent,
 #   write to the client
 while (1) {
-    my $req = "";
+    my $req  = "";
     my $resp = "";
 
-    debug_print ("Server: In main loop\n");
+    debug_print("Server: In main loop\n");
 
     # Read from the client
-    open ( CMD_FIFO, "<", $client_cmd_fifo ) or die $!;
+    open( CMD_FIFO, "<", $client_cmd_fifo ) or die $!;
 
-    while ( sysread ( CMD_FIFO, my $buf, 1024 ) != 0 ){
-        debug_print ("Reading from fifo\n");
+    while ( sysread( CMD_FIFO, my $buf, 1024 ) != 0 ) {
+        debug_print("Reading from fifo\n");
         $req .= $buf;
     }
     close(CMD_FIFO);
 
-    debug_print ("here's the request: $req\n");
+    debug_print("here's the request: $req\n");
 
     # Write to the agent
-    syswrite ( $to_agent_fh, $req );
+    syswrite( $to_agent_fh, $req );
 
-    debug_print ("Finished writing to agent\n");
+    debug_print("Finished writing to agent\n");
 
     # Read from the agent
     my $newlines = 0;
-    while ( sysread ( $from_agent_fh, my $buf, 1 ) != 0 ){
+    while ( sysread( $from_agent_fh, my $buf, 1 ) != 0 ) {
 
         if ( $buf eq "\n" ) {
             $newlines++;
-        } else {
+        }
+        else {
             $newlines = 0;
         }
 
@@ -90,34 +88,37 @@ while (1) {
         $resp .= $buf;
     }
 
-    debug_print ("Server read response from agent: ($resp)\n");
+    debug_print("Server read response from agent: ($resp)\n");
 
     # Write to the client
-    open (CMD_FIFO, ">", $client_cmd_fifo) or die $!;
+    open( CMD_FIFO, ">", $client_cmd_fifo ) or die $!;
     syswrite( CMD_FIFO, "$resp" );
-    close (CMD_FIFO);
+    close(CMD_FIFO);
 
-    debug_print ("Finished writing to client\n");
+    debug_print("Finished writing to client\n");
 
 }
 
-include(../shared/soxprox-shared.pl)
+#<<<
 
+include(SHARED_DIR/soxprox-shared.pl)
 
+;
+
+#>>>
 ###
 # Parse the command line
 #
 #
-sub
-parse_cmdline {
+sub parse_cmdline {
     use Getopt::Long;
-    my ($agent_cmd, $client_cmd, $help) = ('', '', '', '');
-    GetOptions ( 
-        'agent=s' 		=> \$agent_cmd, 
-        'client=s' 		=> \$client_cmd,
-        'client-fifo-mask=i' 	=> \$client_fifo_mask,
-	'debug' 		=> \$debug,
-        'help' 			=> \$help
+    my ( $agent_cmd, $client_cmd, $help ) = ( '', '', '', '' );
+    GetOptions(
+        'agent=s'            => \$agent_cmd,
+        'client=s'           => \$client_cmd,
+        'client-fifo-mask=i' => \$client_fifo_mask,
+        'debug'              => \$debug,
+        'help'               => \$help
     );
 
     if ($help) {
@@ -125,53 +126,48 @@ parse_cmdline {
         exit 0;
     }
 
-    debug_print ("agent command: $agent_cmd, client command: $client_cmd\n");
+    debug_print(
+        "agent command: $agent_cmd, client command: $client_cmd\n");
 
     if ( $agent_cmd eq '' or $client_cmd eq '' ) {
         usage();
         exit 1;
     }
 
-    return ( $agent_cmd, $client_cmd, $debug)
+    return ( $agent_cmd, $client_cmd, $debug )
 
-    #TODO: input sanitization to mitigate command injection possibilities.
-} # end of sub parse_cmdline;
-
-
+     #TODO: input sanitization to mitigate command injection possibilities.
+}    # end of sub parse_cmdline;
 
 ###
 # Make the agent
 #
-# Portability note: "The open2() and open3() functions are unlikely to work 
-# anywhere except on a Unix system or some other one purporting to be POSIX 
+# Portability note: "The open2() and open3() functions are unlikely to work
+# anywhere except on a Unix system or some other one purporting to be POSIX
 # compliant." --perlipc
-sub
-make_agent {
+sub make_agent {
     use FileHandle;
     use IPC::Open2;
     my $agent_cmd = shift;
 
-    my ($agent_pid, $from_agent_fh, $to_agent_fh);
-    $agent_pid = open2($from_agent_fh, $to_agent_fh, $agent_cmd );
+    my ( $agent_pid, $from_agent_fh, $to_agent_fh );
+    $agent_pid = open2( $from_agent_fh, $to_agent_fh, $agent_cmd );
     $alive{$agent_pid} = 1;
-    return ($agent_pid, $from_agent_fh, $to_agent_fh);
-} # end of sub make_agent
-
-
+    return ( $agent_pid, $from_agent_fh, $to_agent_fh );
+}    # end of sub make_agent
 
 ###
 # sub make_client
-# 
+#
 # spawns the local client process and starts communication with it.
-# 
-sub
-make_client {
+#
+sub make_client {
     use POSIX;
 
     ###
     # XXX Work in progress: move from fifos to unix domain sockets. I was
     # using fifos previously because I wasn't using dlsym to shadow the
-    # socket(2) related system calls. 
+    # socket(2) related system calls.
     #
 
     my $client_cmd = shift;
@@ -182,110 +178,105 @@ make_client {
     $SIG{ALRM} = \&null_sig_catcher;
 
     my $rv = fork();
-    if (!defined($rv)) {
+    if ( !defined($rv) ) {
         die "Could not spawn a new process: $!\n";
     }
 
     my $ppid = getppid();
 
-    if ($rv == 0){ # Child
+    if ( $rv == 0 ) {    # Child
 
         # To give the parent time to make the fifo.
-        pause(); 
+        pause();
 
         # Make our environment what we want here:
-        if ( ! -f $ENV{LIBDIR} . '/libmike.so.1' ) {
-		die "Can't find my lib. libdir is " . $ENV{LIBDIR};
-	}
+        if ( !-f $ENV{LIBDIR} . '/libmike.so.1' ) {
+            die "Can't find my lib. libdir is " . $ENV{LIBDIR};
+        }
         $ENV{LD_PRELOAD} = $ENV{LIBDIR} . '/libmike.so.1';
 
         exec($client_cmd)
-            or die('Failed to exec client: $!. Libdir is ' . $ENV{LIBDIR});
+          or die( 'Failed to exec client: $!. Libdir is ' . $ENV{LIBDIR} );
 
-    } else { # Parent
+    }
+    else {    # Parent
 
         # XXX Unix domain sockets also use file paths as addresses.
         # As such, this naming convention will continue to be used.
         #
         my $command_fifo = "/tmp/soxprox-$rv-$$/command_fifo";
-	
+
         $alive{$rv} = 1;
 
         mkdir( dirname($command_fifo), $client_fifo_mask )
-            || die "Couldn't make directory for $command_fifo";
+          || die "Couldn't make directory for $command_fifo";
         mkfifo( $command_fifo, $client_fifo_mask )
-            || die "Couldn't make fifo $command_fifo: $!";
+          || die "Couldn't make fifo $command_fifo: $!";
 
-
-sleep ( 3 );
-        kill ( 'ALRM', $rv );
+        sleep(3);
+        kill( 'ALRM', $rv );
 
         return ( $rv, $command_fifo );
     }
-} # end of sub make_client;
+}    # end of sub make_client;
 
-
-
-sub
-sig_chld {
+sub sig_chld {
     my $sig = shift;
 
     my $dead_pid = wait;
 
     $alive{$dead_pid} = 0;
-    debug_print ("$dead_pid died!\n");
+    debug_print("$dead_pid died!\n");
 
     cleanup();
 
-} # end of sig_chld
+}    # end of sig_chld
 
-sub
-sig_int {
+sub sig_int {
     cleanup();
-} # end of sig_int
+}    # end of sig_int
 
-sub
-null_sig_catcher {
+sub null_sig_catcher {
     ;
 }
 
-sub
-cleanup {
+sub cleanup {
 
-
-    if  ( ( defined $client_pid ) &&
-          ( exists($alive{$client_pid}) ) && 
-          ( $alive{$client_pid} == 1 ) 
-	){
-        kill ( 'INT', $client_pid );
-        if ( waitpid ($client_pid, 0) == $client_pid ) {
+    if (   ( defined $client_pid )
+        && ( exists( $alive{$client_pid} ) )
+        && ( $alive{$client_pid} == 1 ) )
+    {
+        kill( 'INT', $client_pid );
+        if ( waitpid( $client_pid, 0 ) == $client_pid ) {
             $alive{$client_pid} = 0;
         }
     }
 
-
-    if ( ( defined $agent_pid ) &&
-	 ( exists($alive{$agent_pid})) && 
-	 ( $alive{$agent_pid} == 1 ) 
-	){
-        kill ( 'INT', $agent_pid );
-        if ( waitpid ($agent_pid, 0) == $agent_pid ) {
+    if (   ( defined $agent_pid )
+        && ( exists( $alive{$agent_pid} ) )
+        && ( $alive{$agent_pid} == 1 ) )
+    {
+        kill( 'INT', $agent_pid );
+        if ( waitpid( $agent_pid, 0 ) == $agent_pid ) {
             $alive{$agent_pid} = 0;
         }
     }
 
-    close ($from_agent_fh);
-    close ($to_agent_fh);
+    close($from_agent_fh);
+    close($to_agent_fh);
 
     exit(0);
 
-} # end of sub cleanup
+}    # end of sub cleanup
 
-sub
-usage {
+sub usage {
     print "soxprox --help\n";
-    print 'soxprox --agent="agent command" --client="client command"' . "\n";
+    print 'soxprox --agent="agent command" --client="client command"'
+      . "\n";
     print "\n";
-    print "It's probably best to use double quotes around the commands. Here's an example:\n";
-    print 'soxprox --agent="ssh user@target.example.com" --client="nmap -sP 10.1.1.0/255"' . "\n";
-} # end of sub usage
+    print
+"It's probably best to use double quotes around the commands. Here's an example:\n";
+    print
+'soxprox --agent="ssh user@target.example.com" --client="nmap -sP 10.1.1.0/255"'
+      . "\n";
+}    # end of sub usage

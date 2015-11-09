@@ -25,6 +25,8 @@ BINDIR ?= .
 BUILDDIR ?= .
 LIBDIR ?= .
 SRCDIR ?= ..
+SHARED_DIR = ../shared
+
 export BINDIR BUILDDIR LIBDIR SRCDIR
 
 syntax: soxprox.pl
@@ -32,8 +34,12 @@ syntax: soxprox.pl
 
 all: soxprox
 
+pretty: soxprox.pl.m4
+	perltidy soxprox.pl.m4
+	mv soxprox.pl.m4.tdy soxprox.pl.m4
+
 soxprox.pl: soxprox.pl.m4
-	m4 soxprox.pl.m4 > soxprox.pl
+	m4 -DSHARED_DIR=$(SHARED_DIR) soxprox.pl.m4 > soxprox.pl
 	chmod +x soxprox.pl
 
 soxprox: soxprox.pl syntax
