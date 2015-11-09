@@ -2,4 +2,6 @@ For C, K&f&R without the tabs. This is not my personal fave but it's easy
 to do with indent. I've got a .indent.pro file and a 'make pretty' production
 that's ready to rock.
 
-For Perl... ?!
+For Perl, use the perltidy default, plus limiting line length to 75 chars. As
+with C, there's a profile for this in .perltidyrc in the src/agent and 
+src/server directories.
